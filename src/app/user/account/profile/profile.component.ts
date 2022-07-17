@@ -59,7 +59,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.updateProfile(profile).subscribe({
       next: () => {
         this.snack.openSnackBar('updated successfully !');
-        //window.location.reload();
+        window.location.reload();
       },
       error: (error: HttpErrorResponse) => {
         this.handleError(error);
