@@ -10,6 +10,6 @@ export const environment = {
     appId: '1:1053433014505:web:a1a5b11713d7d7a313a878',
     measurementId: 'G-DM433XD6HG',
   },
-  //API_LOCAL: 'http://localhost:8080/api/',
-  API_LOCAL: 'https://e-shop-duan777.herokuapp.com/api/',
+  API_LOCAL: 'http://localhost:8080/api/',
+ // API_LOCAL: 'https://e-shop-duan777.herokuapp.com/api/',
 };

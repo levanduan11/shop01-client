@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { ProductService } from '../service/product.service';
 import { IProductList } from '../model/product-list.model';
 import { HttpResponse } from '@angular/common/http';
@@ -30,8 +30,8 @@ export class ProductListComponent implements OnInit {
     'action',
   ];
   dataSource: MatTableDataSource<IProductList> = new MatTableDataSource();
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort = new MatSort();
+  @ViewChild(MatPaginator,{static:true}) paginator!: MatPaginator;
+  @ViewChild(MatSort,{static:true}) sort: MatSort = new MatSort();
 
   constructor(
     private productService: ProductService,
@@ -39,16 +39,31 @@ export class ProductListComponent implements OnInit {
     public dialog: MatDialog
   ) {}
 
+
   ngOnInit() {
     this.listAll();
   }
   listAll(): void {
-    this.productService.findAll().subscribe({
-      next: (value: HttpResponse<IProductList[]>) => {
-        this.products = value.body ?? [];
-        this.dataSource = new MatTableDataSource(this.products);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+    // this.productService.findAll().subscribe({
+    //   next: (value: HttpResponse<IProductList[]>) => {
+    //     this.products = value.body ?? [];
+    //     this.dataSource = new MatTableDataSource(this.products);
+    //     this.dataSource.paginator = this.paginator;
+    //     this.dataSource.sort = this.sort;
+    //   },
+    //   error: () => {
+    //     alert('server has been error please try again !');
+    //   },
+    // });
+
+    this.productService.getProducts().subscribe({
+      next: (data) => {
+        if (data) {
+          this.products = data;
+          this.dataSource = new MatTableDataSource(this.products);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        }
       },
       error: () => {
         alert('server has been error please try again !');

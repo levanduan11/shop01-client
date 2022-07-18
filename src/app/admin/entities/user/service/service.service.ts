@@ -4,7 +4,15 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError, tap, catchError } from 'rxjs';
+import {
+  Observable,
+  throwError,
+  tap,
+  catchError,
+  mergeMap,
+  map,
+  BehaviorSubject,
+} from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { environment } from 'src/environments/environment.prod';
 import { AuthService } from 'src/app/core/auth/auth.service';
@@ -15,10 +23,12 @@ import { User, IUser } from '../user.model';
 })
 export class UserService {
   private resourceUrl = environment.API_LOCAL + 'admin/users';
-  private email_used = 'Email is already is used';
-  private username_used = 'username already existing';
-
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  private users: BehaviorSubject<IUser[] | null> = new BehaviorSubject<
+    IUser[] | null
+  >(null);
+  constructor(private http: HttpClient, private auth: AuthService) {
+    this.fetchAllUser();
+  }
 
   listAllUsers(): Observable<any> {
     const params = new HttpParams();
@@ -34,20 +44,29 @@ export class UserService {
     };
     return this.http.get(this.resourceUrl + '/all');
   }
+  private fetchAllUser(): void {
+    this.http.get<IUser[]>(`${this.resourceUrl}/all`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.users.next(data);
+        }
+      },
+    });
+  }
 
-  getAll(): Observable<HttpResponse<IUser>>{
-    return this.http.get(this.resourceUrl, { observe: 'response' });
+  getUsers(): Observable<IUser[] | null> {
+    return this.users.asObservable();
+  }
+
+  getAll(): Observable<HttpResponse<IUser[]>> {
+    return this.http.get<IUser[]>(this.resourceUrl, { observe: 'response' });
   }
 
   createUser(user: IUser): Observable<IUser> {
-    return this.http
-      .post(this.resourceUrl, user);
-
+    return this.http.post(this.resourceUrl, user);
   }
   updateUser(user: IUser): Observable<IUser> {
-    return this.http
-      .put(this.resourceUrl, user);
-
+    return this.http.put(this.resourceUrl, user);
   }
   getAuthorities(): Observable<string[]> {
     const url = `${environment.API_LOCAL}roles`;
@@ -55,13 +74,13 @@ export class UserService {
   }
 
   deleteUser(username: string): Observable<void> {
-    return this.http.delete<void>(`${this.resourceUrl}/${username}`);
+    return this.http
+      .delete<void>(`${this.resourceUrl}/${username}`)
+      .pipe(map(() => this.fetchAllUser()));
   }
 
-  find(username: string|null): Observable<IUser> {
+  find(username: string | null): Observable<IUser> {
     const url = `${this.resourceUrl}/${username}`;
     return this.http.get<IUser>(url);
   }
-
-
 }

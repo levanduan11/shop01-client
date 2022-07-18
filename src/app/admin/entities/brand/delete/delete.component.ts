@@ -33,7 +33,7 @@ export class BrandDeleteComponent implements OnInit {
       this.brandService.delete(id).subscribe({
         next: () => {
           this.openSnackBar('have been deleted successfully !');
-          window.location.reload();
+          //window.location.reload();
         },
         error: () => {
           this.openSnackBar('server has an error please try again !');

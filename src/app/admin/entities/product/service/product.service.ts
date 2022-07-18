@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { IProductList } from '../model/product-list.model';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map } from 'rxjs';
 import { getProductIdentifier, IProduct } from '../model/product.model';
 import { environment } from 'src/environments/environment.prod';
 
@@ -13,8 +13,11 @@ export type EntityResponseType = HttpResponse<IProduct>;
 })
 export class ProductService {
   private resourceServer = environment.API_LOCAL + 'admin/products';
+  private products = new BehaviorSubject<IProduct[] | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.fetchProducts();
+  }
   create(product: IProduct): Observable<EntityResponseType> {
     return this.http.post<IProduct>(this.resourceServer, product, {
       observe: 'response',
@@ -44,15 +47,29 @@ export class ProductService {
     });
   }
 
+  getProducts(): Observable<IProduct[] | null>{
+    return this.products.asObservable();
+  }
+
+  private fetchProducts(): void {
+    this.findAll().subscribe({
+      next: (data: HttpResponse<IProduct[]>) => {
+        if (data.body) {
+          this.products.next(data.body);
+        }
+      },
+    });
+  }
+
   findOne(id: number): Observable<EntityResponseType> {
     return this.http.get<IProduct>(`${this.resourceServer}/${id}`, {
       observe: 'response',
     });
   }
 
-  delete(id: number): Observable<HttpResponse<{}>> {
-    return this.http.delete(`${this.resourceServer}/${id}`, {
-      observe: 'response',
-    });
+  delete(id: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.resourceServer}/${id}`)
+      .pipe(map(() => this.fetchProducts()));
   }
 }

@@ -6,9 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort, Sort } from '@angular/material/sort';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { UserDeleteComponent } from '../delete/delete.component';
-import {
-  MatDialog,
-} from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import {
   MatSnackBar,
   MatSnackBarHorizontalPosition,
@@ -38,8 +36,8 @@ export class UserListComponent implements OnInit {
   ];
   dataSource: MatTableDataSource<IUser> = new MatTableDataSource();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort = new MatSort();
+  @ViewChild(MatPaginator,{static:true}) paginator!: MatPaginator;
+  @ViewChild(MatSort,{static:true}) sort: MatSort = new MatSort();
 
   constructor(
     private userService: UserService,
@@ -49,14 +47,19 @@ export class UserListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userService.getAll()
-      .subscribe({
-      next(value) {
-          console.log(value);
+    this.userService.getUsers().subscribe({
+      next: (data) => {
+        if (data) {
+          this.dataSource = new MatTableDataSource(data);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+          this.users = data;
 
+        }
       },
-    })
-    this.listUsers();
+    });
+
+    //this.listUsers();
   }
   openSnackBar() {
     let mess = '';
@@ -78,7 +81,7 @@ export class UserListComponent implements OnInit {
         if (data) {
           this.userService.deleteUser(username).subscribe({
             next: () => {
-              window.location.reload();
+              // window.location.reload();
               this.delete_status = 'have been deleted successfully';
               btnToast.click();
             },

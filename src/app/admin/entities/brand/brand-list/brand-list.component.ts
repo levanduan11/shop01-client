@@ -43,17 +43,30 @@ export class BrandListComponent implements OnInit {
         alert('server has an error please try again!');
       },
     });
+
+    this.brandService.getBrands().subscribe({
+      next: (data) => {
+        if (data) {
+          this.brands = data;
+          this.dataSource = new MatTableDataSource(this.brands);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        }
+      },
+      error: () => {
+        alert('server has an error please try again!');
+      },
+    });
   }
-  onOpenDialog(brand: IBrand): void{
+  onOpenDialog(brand: IBrand): void {
     const brandRef = this.dialog.open(BrandDeleteComponent);
     brandRef.componentInstance.brand = brand;
-
   }
   doFilter(event: Event): void {
     const inputEle = event.target as HTMLInputElement;
     const value = inputEle.value.trim().toLowerCase();
     this.dataSource.filter = value;
-    this.dataSource.filterPredicate
+    this.dataSource.filterPredicate;
   }
   announceSortChange(sortState: Sort) {
     if (sortState.direction) {

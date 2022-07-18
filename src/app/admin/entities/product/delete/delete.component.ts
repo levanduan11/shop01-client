@@ -28,7 +28,7 @@ export class ProductDeleteComponent implements OnInit {
       this.service.delete(id).subscribe({
         next: () => {
           this.openSnackBar('has been deleted !');
-          window.location.reload();
+         // window.location.reload();
         },
         error: () => {
           this.openSnackBar('server has an error try again !');

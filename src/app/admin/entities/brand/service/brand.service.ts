@@ -3,7 +3,7 @@ import { type } from 'os';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { getBrandIdentifier, IBrand } from '../model/brand.model';
 import { environment } from 'src/environments/environment.prod';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map } from 'rxjs';
 
 export type EntityResponseType = HttpResponse<IBrand>;
 export type EntityListResponseType = HttpResponse<IBrand[]>;
@@ -13,7 +13,10 @@ export type EntityListResponseType = HttpResponse<IBrand[]>;
 })
 export class BrandService {
   private resource = environment.API_LOCAL + 'admin/brands';
-  constructor(private http: HttpClient) {}
+  private brands = new BehaviorSubject<IBrand[] | null>(null);
+  constructor(private http: HttpClient) {
+    this.fetchBrands();
+  }
 
   create(brand: IBrand): Observable<EntityResponseType> {
     return this.http.post<IBrand>(`${this.resource}`, brand, {
@@ -34,6 +37,17 @@ export class BrandService {
       observe: 'response',
     });
   }
+  getBrands(): Observable<IBrand[] | null>{
+    return this.brands.asObservable();
+  }
+
+  private fetchBrands(): void{
+    this.findAll().subscribe({
+      next: (data: HttpResponse<IBrand[]>) => {
+        this.brands.next(data.body);
+      }
+    })
+  }
 
   finById(id: number): Observable<EntityResponseType> {
     return this.http.get<IBrand>(`${this.resource}/${id}`, {
@@ -41,10 +55,11 @@ export class BrandService {
     });
   }
 
-  delete(id: number): Observable<HttpResponse<{}>> {
-    return this.http.delete(`${this.resource}/${id}`, {
-      observe: 'response',
-    });
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.resource}/${id}`)
+      .pipe(
+        map(()=>this.fetchBrands())
+      );
   }
 
   listCategory(name:string): Observable<string[]>{

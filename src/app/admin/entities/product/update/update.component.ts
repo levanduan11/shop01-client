@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../service/product.service';
 import { BrandService } from '../../brand/service/brand.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Route, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IBrand } from '../../brand/model/brand.model';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
@@ -25,8 +25,8 @@ export class ProductUpdateComponent implements OnInit {
     id: [],
     name: ['', Validators.required],
     alias: [],
-    brand: [],
-    category: [],
+    brand: [null, [Validators.required]],
+    category: [null, [Validators.required]],
     enabled: [false],
     inStock: [false],
     unitsInStock: [0],
@@ -71,7 +71,8 @@ export class ProductUpdateComponent implements OnInit {
     private brandService: BrandService,
     private activatedRoute: ActivatedRoute,
     private fb: FormBuilder,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private route: Router
   ) {}
 
   ngOnInit() {
@@ -119,7 +120,8 @@ export class ProductUpdateComponent implements OnInit {
       this.productService.create(product).subscribe({
         next: () => {
           this.openSnackBar('have been created successfully!');
-          this.onPrevious();
+          this.route.navigateByUrl('/admin/product');
+          // this.onPrevious();
         },
         error: (err: HttpErrorResponse) => {
           this.handleErrResponse(err);
@@ -177,7 +179,7 @@ export class ProductUpdateComponent implements OnInit {
       category: product.category,
       enabled: product.enabled,
       inStock: product.inStock,
-      unitsInStock:product.unitsInStock,
+      unitsInStock: product.unitsInStock,
       cost: product.cost,
       price: product.price,
       discountPercent: product.discountPercent,
