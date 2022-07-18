@@ -120,8 +120,7 @@ export class ProductUpdateComponent implements OnInit {
       this.productService.create(product).subscribe({
         next: () => {
           this.openSnackBar('have been created successfully!');
-          this.route.navigateByUrl('/admin/product');
-          // this.onPrevious();
+           this.onPrevious();
         },
         error: (err: HttpErrorResponse) => {
           this.handleErrResponse(err);
