@@ -32,18 +32,7 @@ export class BrandListComponent implements OnInit {
   }
 
   findAll(): void {
-    this.brandService.findAll().subscribe({
-      next: (response: HttpResponse<IBrand[]>) => {
-        this.brands = response.body ?? [];
-        this.dataSource = new MatTableDataSource(this.brands);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-      },
-      error: () => {
-        alert('server has an error please try again!');
-      },
-    });
-
+   
     this.brandService.getBrands().subscribe({
       next: (data) => {
         if (data) {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { IProductList } from '../model/product-list.model';
-import { Observable, BehaviorSubject, tap, map } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map, mergeMap } from 'rxjs';
 import { getProductIdentifier, IProduct } from '../model/product.model';
 import { environment } from 'src/environments/environment.prod';
 
@@ -18,28 +18,34 @@ export class ProductService {
   constructor(private http: HttpClient) {
     this.fetchProducts();
   }
-  create(product: IProduct): Observable<EntityResponseType> {
-    return this.http.post<IProduct>(this.resourceServer, product, {
-      observe: 'response',
-    });
-  }
-  update(product: IProduct): Observable<EntityResponseType> {
-    return this.http.put<IProduct>(
-      `${this.resourceServer}/${getProductIdentifier(product) as number}`,
-      product,
-      {
+  create(product: IProduct): Observable<void> {
+    return this.http
+      .post<IProduct>(this.resourceServer, product, {
         observe: 'response',
-      }
-    );
+      })
+      .pipe(map(() => this.fetchProducts()));
   }
-  partialUpdate(product: IProduct): Observable<EntityResponseType> {
-    return this.http.patch<IProduct>(
-      `${this.resourceServer}/${getProductIdentifier(product) as number}`,
-      product,
-      {
-        observe: 'response',
-      }
-    );
+  update(product: IProduct): Observable<void> {
+    return this.http
+      .put<IProduct>(
+        `${this.resourceServer}/${getProductIdentifier(product) as number}`,
+        product,
+        {
+          observe: 'response',
+        }
+      )
+      .pipe(map(() => this.fetchProducts()));
+  }
+  partialUpdate(product: IProduct): Observable<void> {
+    return this.http
+      .patch<IProduct>(
+        `${this.resourceServer}/${getProductIdentifier(product) as number}`,
+        product,
+        {
+          observe: 'response',
+        }
+      )
+      .pipe(map(() => this.fetchProducts()));
   }
   findAll(): Observable<EntityListResponseType> {
     return this.http.get<IProductList[]>(this.resourceServer, {
@@ -47,7 +53,7 @@ export class ProductService {
     });
   }
 
-  getProducts(): Observable<IProduct[] | null>{
+  getProducts(): Observable<IProduct[] | null> {
     return this.products.asObservable();
   }
 

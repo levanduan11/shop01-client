@@ -18,35 +18,39 @@ export class BrandService {
     this.fetchBrands();
   }
 
-  create(brand: IBrand): Observable<EntityResponseType> {
-    return this.http.post<IBrand>(`${this.resource}`, brand, {
-      observe: 'response',
-    });
-  }
-  update(brand: IBrand): Observable<EntityResponseType> {
-    return this.http.put<IBrand>(
-      `${this.resource}/${getBrandIdentifier(brand) as number}`,
-      brand,
-      {
+  create(brand: IBrand): Observable<void> {
+    return this.http
+      .post<IBrand>(`${this.resource}`, brand, {
         observe: 'response',
-      }
-    );
+      })
+      .pipe(map(() => this.fetchBrands()));
+  }
+  update(brand: IBrand): Observable<void> {
+    return this.http
+      .put<IBrand>(
+        `${this.resource}/${getBrandIdentifier(brand) as number}`,
+        brand,
+        {
+          observe: 'response',
+        }
+      )
+      .pipe(map(() => this.fetchBrands()));
   }
   findAll(): Observable<EntityListResponseType> {
     return this.http.get<IBrand[]>(`${this.resource}`, {
       observe: 'response',
     });
   }
-  getBrands(): Observable<IBrand[] | null>{
+  getBrands(): Observable<IBrand[] | null> {
     return this.brands.asObservable();
   }
 
-  private fetchBrands(): void{
+  private fetchBrands(): void {
     this.findAll().subscribe({
       next: (data: HttpResponse<IBrand[]>) => {
         this.brands.next(data.body);
-      }
-    })
+      },
+    });
   }
 
   finById(id: number): Observable<EntityResponseType> {
@@ -56,13 +60,12 @@ export class BrandService {
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.resource}/${id}`)
-      .pipe(
-        map(()=>this.fetchBrands())
-      );
+    return this.http
+      .delete<void>(`${this.resource}/${id}`)
+      .pipe(map(() => this.fetchBrands()));
   }
 
-  listCategory(name:string): Observable<string[]>{
+  listCategory(name: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.resource}/all/categories/${name}`);
   }
 }

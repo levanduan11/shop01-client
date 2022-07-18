@@ -62,11 +62,15 @@ export class UserService {
     return this.http.get<IUser[]>(this.resourceUrl, { observe: 'response' });
   }
 
-  createUser(user: IUser): Observable<IUser> {
-    return this.http.post(this.resourceUrl, user);
+  createUser(user: IUser): Observable<void> {
+    return this.http
+      .post(this.resourceUrl, user)
+      .pipe(map(() => this.fetchAllUser()));
   }
-  updateUser(user: IUser): Observable<IUser> {
-    return this.http.put(this.resourceUrl, user);
+  updateUser(user: IUser): Observable<void> {
+    return this.http
+      .put(this.resourceUrl, user)
+      .pipe(map(() => this.fetchAllUser()));
   }
   getAuthorities(): Observable<string[]> {
     const url = `${environment.API_LOCAL}roles`;
