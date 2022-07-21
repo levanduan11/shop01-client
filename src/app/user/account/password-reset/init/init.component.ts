@@ -8,6 +8,7 @@ import {
 import { FormBuilder, Validators } from '@angular/forms';
 import { PasswordInitService } from './password-init.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { SnackBarService } from '../../../../shared/alert/snack-bar.service';
 
 @Component({
   selector: 'app-init',
@@ -22,7 +23,8 @@ export class InitResetPasswordComponent implements OnInit {
   });
   constructor(
     private fb: FormBuilder,
-    private passwordInit: PasswordInitService
+    private passwordInit: PasswordInitService,
+    private snack:SnackBarService
   ) {}
 
   ngOnInit() {}
@@ -37,8 +39,10 @@ export class InitResetPasswordComponent implements OnInit {
       },
       error: (error: HttpErrorResponse) => {
         console.log(error);
+        this.success = false;
 
         this.message = error.error.message;
+        this.snack.openSnackBar(this.message!);
       },
     });
   }
