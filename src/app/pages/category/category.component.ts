@@ -11,6 +11,7 @@ import { PublicCategoryService } from '../public-service/public-category.service
 import { ICategoryClient } from '../../admin/entities/category/model/category-client.model';
 import { CategoryNode } from 'src/app/admin/entities/category/model/category-node.model';
 import { ICategoryParent } from '../../admin/entities/category/model/category-parent.model';
+import { tap, map } from 'rxjs';
 
 @Component({
   selector: 'app-category',
@@ -37,47 +38,50 @@ export class PublicCategoryComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.activatedRoute.paramMap.subscribe({
-      next: (data) => {
-        this.alias = data.get('alias') as string;
-      },
-    });
 
-    if (this.alias) {
-      this.loadProduct(this.alias);
-      this.publicCategory.findOneAndSubCategory(this.alias).subscribe({
-        next: (data: HttpResponse<CategoryNode>) => {
-          this.category = data.body ?? null;
-          if (this.category) {
-            this.childNode = this.category.child ?? [];
-          }
-        },
-        error: (err: HttpErrorResponse) => {
-          if (err.status === 404) {
-            this.snack.openSnackBar('not found category  !');
-          } else {
-            this.snack.openSnackBar('server has an error try again !');
+    this.activatedRoute.paramMap
+      .pipe(map((value) => value.get('alias')))
+      .subscribe({
+        next: (data) => {
+          if (data) {
+            this.alias = data;
+            this.loadProduct(this.alias);
+            this.publicCategory.findOneAndSubCategory(this.alias).subscribe({
+              next: (data: HttpResponse<CategoryNode>) => {
+                this.category = data.body ?? null;
+                if (this.category) {
+                  this.childNode = this.category.child ?? [];
+                }
+              },
+              error: (err: HttpErrorResponse) => {
+                if (err.status === 404) {
+                  this.snack.openSnackBar('not found category  !');
+                } else {
+                  this.snack.openSnackBar('server has an error try again !');
+                }
+              },
+            });
+            this.publicCategory.findAllParent(this.alias).subscribe({
+              next: (data: HttpResponse<ICategoryParent[]>) => {
+                this.parents = data.body ?? [];
+              },
+              error: (err: HttpErrorResponse) => {
+                if (err.status === 404) {
+                  this.snack.openSnackBar('not found category  !');
+                } else {
+                  this.snack.openSnackBar('server has an error try again !');
+                }
+              },
+            });
           }
         },
       });
-      this.publicCategory.findAllParent(this.alias).subscribe({
-        next: (data: HttpResponse<ICategoryParent[]>) => {
-          this.parents = data.body ?? [];
-        },
-        error: (err: HttpErrorResponse) => {
-          if (err.status === 404) {
-            this.snack.openSnackBar('not found category  !');
-          } else {
-            this.snack.openSnackBar('server has an error try again !');
-          }
-        },
-      });
-    }
+
   }
   onSubCategory(event: Event, alias: string | undefined): void {
     event.preventDefault();
     if (alias) {
-      this.router.navigate(['c', alias]).then(() => window.location.reload());
+      this.router.navigate(['c', alias]); 
     }
   }
 
