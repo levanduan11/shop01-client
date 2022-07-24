@@ -22,6 +22,9 @@ export class HomeComponent implements OnInit {
   categories: CategoryNode[] = [];
   products?: IProduct[];
   brands?: IBrand[];
+  isLoadingCategories = true;
+  isLoadingProducts = true;
+  isLoadingBrands = true;
   treeControl = new NestedTreeControl<CategoryNode>((node) => node.child);
   dataSource = new MatTreeNestedDataSource<CategoryNode>();
   @ViewChild('latestProducts') colLatest!: ElementRef;
@@ -32,7 +35,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private categoryService: CategoryService,
     private productService: PublicProductService,
-    private brandService:PublicBrandService,
+    private brandService: PublicBrandService,
     private snack: SnackBarService
   ) {}
 
@@ -43,15 +46,16 @@ export class HomeComponent implements OnInit {
   }
   ngAfterViewInit(): void {
     const div = this.colLatest.nativeElement as HTMLDivElement;
-
   }
   listAll(): void {
     this.categoryService.listAllPublic().subscribe({
       next: (data: any) => {
         this.categories = data;
         this.dataSource.data = this.categories;
+        this.isLoadingCategories = false;
       },
       error: () => {
+        this.isLoadingCategories = false;
         this.snack.openSnackBar('has an error please try again !!!');
       },
     });
@@ -60,23 +64,25 @@ export class HomeComponent implements OnInit {
   listNew(): void {
     this.productService.listNew().subscribe({
       next: (data: HttpResponse<IProduct[]>) => {
-
         this.products = data.body ?? [];
+        this.isLoadingProducts = false;
       },
       error: () => {
         this.snack.openSnackBar('has error try again !');
-      }
+        this.isLoadingProducts = false;
+      },
     });
   }
-  listBrandTop(): void{
+  listBrandTop(): void {
     this.brandService.listForHome().subscribe({
       next: (data: HttpResponse<IBrand[]>) => {
         this.brands = data.body ?? [];
-     
+        this.isLoadingBrands = false;
       },
       error: () => {
         this.snack.openSnackBar('server has error try again !');
-      }
-    })
+        this.isLoadingProducts = false;
+      },
+    });
   }
 }

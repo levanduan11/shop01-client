@@ -38,11 +38,9 @@ export class InitResetPasswordComponent implements OnInit {
         this.message = 'please check your email to confirm';
       },
       error: (error: HttpErrorResponse) => {
-        console.log(error);
         this.success = false;
-
         this.message = error.error.message;
-        this.snack.openSnackBar(this.message!);
+        this.snack.openSnackBar('Invalid Email try again');
       },
     });
   }

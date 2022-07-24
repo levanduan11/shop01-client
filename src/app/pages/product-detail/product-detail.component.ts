@@ -80,7 +80,7 @@ export class ProductViewDetailComponent implements OnInit {
   onSubCategory(event: Event, alias: string | undefined): void {
     event.preventDefault();
     if (alias) {
-      this.router.navigate(['c', alias]).then(() => window.location.reload());
+      this.router.navigate(['c', alias]);
     }
   }
   onHover(extra: HTMLImageElement): void {
