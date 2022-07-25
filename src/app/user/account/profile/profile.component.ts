@@ -1,20 +1,23 @@
 import { Account } from './../../../core/auth/account.model';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from './profile.service';
 import { AccountService } from '../../../core/auth/account.service';
 import { IProfile } from './profile.model';
 import { FormBuilder, Validators } from '@angular/forms';
 import { SnackBarService } from '../../../shared/alert/snack-bar.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ReplaySubject, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css'],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit,OnDestroy {
+  refresh$ = new Subject<void>();
   account: Account | null = null;
   imageUrl: string | null = null;
+
   profileForm = this.fb.group({
     id: [],
     username: [
@@ -37,8 +40,21 @@ export class ProfileComponent implements OnInit {
     private fb: FormBuilder,
     private snack: SnackBarService
   ) {}
+  ngOnDestroy(): void {
+    this.refresh$.unsubscribe();
+  }
 
   ngOnInit() {
+    this.loadData();
+    this.refresh$.subscribe({
+      next: () => {
+        this.loadData();
+      }
+    })
+  }
+
+  private loadData(): void{
+
     this.accountService.fetch().subscribe({
       next: (data) => {
         if (data) {
@@ -59,10 +75,12 @@ export class ProfileComponent implements OnInit {
     this.profileService.updateProfile(profile).subscribe({
       next: () => {
         this.snack.openSnackBar('updated successfully !');
-        window.location.reload();
+        this.refresh$.next();
+
       },
       error: (error: HttpErrorResponse) => {
         this.handleError(error);
+          this.refresh$.next();
       },
     });
   }
